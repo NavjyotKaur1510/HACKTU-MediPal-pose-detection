@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 import json
 import random
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 # ---- Import YOUR project modules from src ----
 from src.pose_tracker import PoseTracker
@@ -102,8 +102,8 @@ class SessionTracker:
         else:
             raise ValueError(f"Unsupported exercise: {exercise}")
 
-        self.form_scores: list[float] = []
-        self.align_scores: list[float] = []
+        self.form_scores: List[float] = []
+        self.align_scores: List[float] = []
         self.last_angle: Optional[float] = None
 
     # ---------- Landmark extraction ----------
@@ -221,7 +221,9 @@ async def session_ws(websocket: WebSocket):
 
                 elif data.get("type") == "end" and session:
                     report = session.generate_report()
-                    await websocket.send_text(json.dumps({"type": "final_report", "report": report}))
+                    await websocket.send_text(
+                        json.dumps({"type": "final_report", "report": report})
+                    )
                     break
 
             if "bytes" in message and session:
@@ -233,10 +235,9 @@ async def session_ws(websocket: WebSocket):
 
                     if session.counter.state.counter >= session.target_reps:
                         report = session.generate_report()
-                        await websocket.send_text(json.dumps({
-                            "type": "final_report",
-                            "report": report,
-                        }))
+                        await websocket.send_text(
+                            json.dumps({"type": "final_report", "report": report})
+                        )
                         break
 
     except WebSocketDisconnect:
@@ -249,5 +250,3 @@ async def session_ws(websocket: WebSocket):
 @app.get("/")
 def root():
     return {"status": "Exercise ML API running with REAL scoring"}
-
-
