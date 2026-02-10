@@ -1,10 +1,13 @@
 from dataclasses import dataclass
+from typing import Optional
 from .utils import calculate_angle
+
 
 @dataclass
 class RepState:
     counter: int = 0
-    stage: str | None = None   # "up" or "down"
+    stage: Optional[str] = None   # "up" or "down"
+
 
 class BicepCurlCounter:
     """
@@ -17,25 +20,30 @@ class BicepCurlCounter:
         self.state = RepState()
 
     def update(self, shoulder, elbow, wrist, visibility: float):
-        """
-        shoulder, elbow, wrist: (x, y) normalized
-        visibility: float for elbow landmark visibility
-        Returns dict with angle, counter, stage
-        """
         angle = calculate_angle(shoulder, elbow, wrist)
 
-        # If landmark is not reliable, don't change state
         if visibility < self.visibility_threshold:
-            return {"angle": angle, "counter": self.state.counter, "stage": self.state.stage, "reliable": False}
+            return {
+                "angle": angle,
+                "counter": self.state.counter,
+                "stage": self.state.stage,
+                "reliable": False
+            }
 
-        # Stage logic
         if angle > self.down_angle:
             self.state.stage = "down"
+
         if angle < self.up_angle and self.state.stage == "down":
             self.state.stage = "up"
             self.state.counter += 1
 
-        return {"angle": angle, "counter": self.state.counter, "stage": self.state.stage, "reliable": True}
+        return {
+            "angle": angle,
+            "counter": self.state.counter,
+            "stage": self.state.stage,
+            "reliable": True
+        }
+
 
 class SquatCounter:
     """
@@ -51,18 +59,27 @@ class SquatCounter:
         angle = calculate_angle(hip, knee, ankle)
 
         if visibility < self.visibility_threshold:
-            return {"angle": angle, "counter": self.state.counter, "stage": self.state.stage, "reliable": False}
+            return {
+                "angle": angle,
+                "counter": self.state.counter,
+                "stage": self.state.stage,
+                "reliable": False
+            }
 
-        # Standing
         if angle > self.up_angle:
             self.state.stage = "up"
 
-        # Completed rep when going down after being up
         if angle < self.down_angle and self.state.stage == "up":
             self.state.stage = "down"
             self.state.counter += 1
 
-        return {"angle": angle, "counter": self.state.counter, "stage": self.state.stage, "reliable": True}
+        return {
+            "angle": angle,
+            "counter": self.state.counter,
+            "stage": self.state.stage,
+            "reliable": True
+        }
+
 
 class ShoulderPressCounter:
     """
@@ -78,17 +95,23 @@ class ShoulderPressCounter:
         angle = calculate_angle(shoulder, elbow, wrist)
 
         if visibility < self.visibility_threshold:
-            return {"angle": angle, "counter": self.state.counter,
-                    "stage": self.state.stage, "reliable": False}
+            return {
+                "angle": angle,
+                "counter": self.state.counter,
+                "stage": self.state.stage,
+                "reliable": False
+            }
 
-        # Arms fully up
         if angle > self.up_angle:
             self.state.stage = "up"
 
-        # Completed rep when coming down after being up
         if angle < self.down_angle and self.state.stage == "up":
             self.state.stage = "down"
             self.state.counter += 1
 
-        return {"angle": angle, "counter": self.state.counter,
-                "stage": self.state.stage, "reliable": True}
+        return {
+            "angle": angle,
+            "counter": self.state.counter,
+            "stage": self.state.stage,
+            "reliable": True
+        }
