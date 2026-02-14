@@ -25,7 +25,7 @@ pose_tracker = PoseTracker()
 mp_pose = mp.solutions.pose
 
 # =========================
-# Scoring helper
+# Scoring helpers
 # =========================
 
 def clamp01(x: float) -> float:
